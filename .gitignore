@@ -1,6 +1,7 @@
 /target
 **/*.rs.bk
-
+*.apk
+*~
 
 #Added by cargo
 #
