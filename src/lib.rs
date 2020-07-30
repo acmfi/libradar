@@ -1,7 +1,7 @@
 pub mod radar {
 	use std::fs;
 	use std::io::BufReader;
-	
+
 	pub struct APK <'a> {
 		path: &'a str,
 		apk: zip::read::ZipArchive<BufReader<fs::File>>
@@ -16,9 +16,9 @@ pub mod radar {
 					apk: apk
 				}
 			)
-				
+
 		}
-		
+
 		pub fn set_path(&mut self, path: &'a str) {
 			self.path = path;
 		}
@@ -31,11 +31,11 @@ pub mod radar {
 			let ret = &self.apk;
 			&ret
 		}
-		
+
 	}
-		
+
 	pub fn find_apk(name: &str) -> String {
-		let fname = std::path::Path::new(name);		
+		let fname = std::path::Path::new(name);
 		assert!(fname.exists());
 		name.to_string()
 	}
@@ -45,8 +45,8 @@ pub mod radar {
 		let file = fs::File::open(&path)?;
 		let reader = BufReader::new(file);
 		println!("APK file {} opened succesfully",&name);
-		
-		Ok(APK::new(&name,reader).unwrap())
+
+		APK::new(&name,reader)
 	}
 
 	pub fn show_apk_contents(apk: &APK) {
@@ -72,13 +72,13 @@ mod tests {
 	use super::radar::APK;
 	use std::fs;
 	use std::io::BufReader;
-	
+
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
     }
 
-	#[test]	
+	#[test]
 	fn find_file() {
 		assert_eq!(find_apk("apkchiquita.apk"),"apkchiquita.apk");
 	}
@@ -92,17 +92,17 @@ mod tests {
 	}
 	#[test]
 	fn open_file() {
-		
+
 	}
 
 	#[test]
 	fn show_content() {
-		
+
 	}
 
 	#[test]
 	fn show_dex() {
-		
+
 	}
-	
+
 }

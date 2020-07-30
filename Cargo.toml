@@ -1,5 +1,5 @@
 [package]
-name = "acm-libradar"
+name = "libradar"
 version = "0.1.0"
 authors = ["Daniel Domínguez <danieldominguez05@gmail.com>"]
 edition = "2018"
