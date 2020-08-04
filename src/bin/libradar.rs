@@ -14,13 +14,29 @@ fn main () {
 	println!("{}\n",apk_path);
 
 	println!("Opening APK file...");
-	let apk_file = &open_apk(&*args[1]).unwrap();
+	let mut apk_file = &mut open_apk(&*args[1]).unwrap();
 	println!();
 
 	println!("Listing all contents in APK file...");
-	show_apk_contents(apk_file);
+	//show_apk_contents(apk_file);
 	println!();
 
 	println!("Listing .dex files in APK file...");
 	show_dex_files(apk_file);
+	println!();
+
+	println!("Getting list of .dex files...");
+	let list = get_dex_list(&mut apk_file);
+	//let list
+	println!();
+
+	let apk_file = &mut open_apk(&*args[1]).unwrap();
+	println!();
+
+	println!("Print all fetched .dex files...");
+	let _map = get_dex_files(apk_file,list);
+	println!();
+
+
+
 }
