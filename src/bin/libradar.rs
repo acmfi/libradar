@@ -1,17 +1,20 @@
 use libradar::radar::*;
 
-fn main () {
+fn main() {
+    let args: Vec<_> = std::env::args().collect();
+    if args.len() < 2 {
+        println!("An argument is needed in order to work.");
+        println!("Usage: {} <apk filename>", &*args[0]);
+        panic!();
+    }
 
-	let args: Vec<_> = std::env::args().collect();
-	if args.len() < 2 {
-		println!("An argument is needed in order to work.");
-		println!("Usage: {} <apk filename>",&*args[0]);
-		panic!();
-	}
+    println!("Finding APK file...");
+    let apk_path = find_apk(&*args[1]);
+    println!("{}\n", apk_path);
 
-	println!("Finding APK file...");
-	let apk_path = find_apk(&*args[1]);
-	println!("{}\n",apk_path);
+    println!("Opening APK file...");
+    let apk_file = &open_apk(&*args[1]).unwrap();
+    println!();
 
 	println!("Opening APK file...");
 	let mut apk_file = &mut open_apk(&*args[1]).unwrap();

@@ -97,41 +97,34 @@ pub mod radar {
 
 #[cfg(test)]
 mod tests {
-	use super::radar::*;
-	use super::radar::APK;
-	use std::fs;
-	use std::io::BufReader;
+    use super::radar::APK;
+    use super::radar::*;
+    use std::fs;
+    use std::io::BufReader;
 
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
     }
 
-	#[test]
-	fn find_file() {
-		assert_eq!(find_apk("apkchiquita.apk"),"apkchiquita.apk");
-	}
+    #[test]
+    fn find_file() {
+        assert_eq!(find_apk("resources/test01.apk"), "resources/test01.apk");
+    }
 
-	#[test]
-	fn create_struct() -> Result<(),Box<std::error::Error>> {
-		let file = fs::File::open("./apkchiquita.apk")?;
-		let reader = BufReader::new(file);
-		let _apk = APK::new("./apkchiquita.apk",reader)?;
-		Ok(())
-	}
-	#[test]
-	fn open_file() {
+    #[test]
+    fn create_struct() -> Result<(), Box<std::error::Error>> {
+        let file = fs::File::open("resources/test01.apk")?;
+        let reader = BufReader::new(file);
+        let _apk = APK::new("resources/test01.apk", reader)?;
+        Ok(())
+    }
+    #[test]
+    fn open_file() {}
 
-	}
+    #[test]
+    fn show_content() {}
 
-	#[test]
-	fn show_content() {
-
-	}
-
-	#[test]
-	fn show_dex() {
-
-	}
-
+    #[test]
+    fn show_dex() {}
 }
