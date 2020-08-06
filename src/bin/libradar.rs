@@ -12,10 +12,6 @@ fn main() {
     let apk_path = find_apk(&*args[1]);
     println!("{}\n", apk_path);
 
-    println!("Opening APK file...");
-    let apk_file = &open_apk(&*args[1]).unwrap();
-    println!();
-
 	println!("Opening APK file...");
 	let mut apk_file = &mut open_apk(&*args[1]).unwrap();
 	println!();
@@ -36,7 +32,7 @@ fn main() {
 	let apk_file = &mut open_apk(&*args[1]).unwrap();
 	println!();
 
-	println!("Print all fetched .dex files...");
+	println!("Mapping all fetched .dex files...");
 	let _map = get_dex_files(apk_file,list);
 	println!();
 

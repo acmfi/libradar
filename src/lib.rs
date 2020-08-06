@@ -1,9 +1,10 @@
+
+
 pub mod radar {
 	use std::fs;
-	use std::io::BufReader;
-	use std::io::Read;
+	use std::io::{BufReader,Read};
 	use std::collections::HashMap;
-	use std::borrow::ToOwned;
+	use dex::{Dex,DexReader};
 	
 	type ApkArchive = zip::read::ZipArchive<BufReader<fs::File>>;
 	
@@ -13,7 +14,7 @@ pub mod radar {
 	}
 
 	impl <'a> APK <'a> {
-		pub fn new (path: &'a str, reader: BufReader<fs::File>) -> Result<Self,Box<std::error::Error>> {
+		pub fn new (path: &'a str, reader: BufReader<fs::File>) -> Result<Self,Box<dyn std::error::Error>> {
 			let apk = zip::ZipArchive::new(reader)?;
 			Ok(
 				APK {
@@ -44,7 +45,7 @@ pub mod radar {
 		name.to_string()
 	}
 
-	pub fn open_apk(name: &str) -> Result<APK,Box<std::error::Error>> {
+	pub fn open_apk(name: &str) -> Result<APK,Box<dyn std::error::Error>> {
 		let path = find_apk(&name);
 		let file = fs::File::open(&path)?;
 		let reader = BufReader::new(file);
@@ -80,19 +81,29 @@ pub mod radar {
 		vec
 	}
 
-	fn read_dex_file(apk: &mut APK, file: &str, mut buf: &mut Vec<u8>) {
-		apk.get_apk().by_name(file).unwrap().read_to_end(&mut buf);
+	fn read_dex_file(apk: &mut APK, file: &str, mut buf: &mut Vec<u8>) -> Result<(),Box<dyn std::error::Error>>{
+		apk.get_apk().by_name(file).unwrap().read_to_end(&mut buf)?;
+		Ok(())
 	}
 	
-	pub fn get_dex_files<'a>(apk: &mut APK, files: Vec<&'a str>) -> HashMap<&'a str, Vec<u8>> {
-		let mut filemap: HashMap<&str, Vec<u8>> = HashMap::new();
+	pub fn get_dex_files<'a>(apk: &mut APK, files: Vec<&'a str>) -> Result<HashMap<&'a str, Dex<Vec<u8>>>,Box<dyn std::error::Error>> {
+		let mut filemap: HashMap<&str, Dex<Vec<u8>>> = HashMap::new();
+		
 		for file in files.iter() {
 			let mut bytearray: Vec<u8> = Vec::new();
-			read_dex_file(apk, file, &mut bytearray);
-			filemap.insert(file, bytearray);
-		}
-		filemap
+			read_dex_file(apk, file, &mut bytearray)?;
+			let dex_array = DexReader::from_vec(bytearray)?;
+			filemap.insert(file, dex_array);
+		}		
+		Ok(filemap)
 	}
+	
+	// pub fn get_dex_classes<'a>(dexmap: HashMap<&'a str, Dex<Vec<u8>>>) {
+	// 	for (k, v) in dexmap {
+	// 		let dex = &v;
+	// 	}
+	// }
+	
 }
 
 #[cfg(test)]
@@ -101,11 +112,7 @@ mod tests {
     use super::radar::*;
     use std::fs;
     use std::io::BufReader;
-
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+	//use std::io::Read;
 
     #[test]
     fn find_file() {
@@ -113,14 +120,28 @@ mod tests {
     }
 
     #[test]
-    fn create_struct() -> Result<(), Box<std::error::Error>> {
+    fn create_struct() -> Result<(), Box<dyn std::error::Error>> {
         let file = fs::File::open("resources/test01.apk")?;
         let reader = BufReader::new(file);
         let _apk = APK::new("resources/test01.apk", reader)?;
         Ok(())
     }
     #[test]
-    fn open_file() {}
+    fn get_dex() -> Result<(), Box<dyn std::error::Error>> {
+		let mut apk = open_apk("resources/test01.apk")?;
+		let files = get_dex_list(&mut apk);
+		let mut apk = open_apk("resources/test01.apk")?;
+		let map = get_dex_files(&mut apk, files)?;
+		// let mut dex = fs::File::open("resources/classes.dex")?;
+		// let mut buf: Vec<u8> = Vec::new();
+		// dex.read_to_end(&mut buf)?;
+		assert!(map.contains_key("classes.dex"));
+		for (k, _v) in map {
+			assert_eq!(k,"classes.dex");
+			// assert_eq!(v.as_slice(),buf.as_slice());
+		}
+        Ok(())
+	}
 
     #[test]
     fn show_content() {}
