@@ -1,11 +1,12 @@
 // use std::convert::TryFrom;
 use std::convert::TryInto;
 use std::fmt;
+use dex::code::CodeItem;
 
 #[allow(dead_code)]
 mod opcodes;
 
-use crate::opcodes::*;
+use crate::disass::opcodes::*;
 
 trait InstGetter {
     fn length(&self) -> usize;
@@ -1274,6 +1275,10 @@ impl Inst<'_> {
             self.get_b().try_into().unwrap()
         }
     }
+
+    pub fn mnemonic(&self) -> &str {
+        INSTTYPES[self.op()].mnemonic
+    }
 }
 
 impl fmt::Debug for Inst<'_> {
@@ -1322,6 +1327,11 @@ impl<'a> Iterator for InstIterator<'a> {
             None
         }
     }
+}
+
+pub fn disassemble<'a>(code: &'a CodeItem) -> InstIterator<'a> {
+    let (_, data, _) = unsafe { (code.insns()).align_to::<u8>() };
+    InstIterator::new(data, code.insns().len() * 2)
 }
 
 #[cfg(test)]

@@ -1,12 +1,14 @@
+pub mod disass;
+
 pub mod radar {
 	use std::fs;
 	use std::io::BufReader;
 	use std::io::Read;
 	use std::collections::HashMap;
 	use std::borrow::ToOwned;
-	
+
 	type ApkArchive = zip::read::ZipArchive<BufReader<fs::File>>;
-	
+
 	pub struct APK <'a> {
 		path: &'a str,
 		apk: ApkArchive
@@ -61,7 +63,7 @@ pub mod radar {
 	}
 
 	pub fn show_dex_files(apk: &mut APK) {
-		let list = apk.get_apk().file_names();		
+		let list = apk.get_apk().file_names();
 		for name in list {
 			if name.contains(".dex") {
 				println!("{}",name)
@@ -83,7 +85,7 @@ pub mod radar {
 	fn read_dex_file(apk: &mut APK, file: &str, mut buf: &mut Vec<u8>) {
 		apk.get_apk().by_name(file).unwrap().read_to_end(&mut buf);
 	}
-	
+
 	pub fn get_dex_files<'a>(apk: &mut APK, files: Vec<&'a str>) -> HashMap<&'a str, Vec<u8>> {
 		let mut filemap: HashMap<&str, Vec<u8>> = HashMap::new();
 		for file in files.iter() {
