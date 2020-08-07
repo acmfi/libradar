@@ -16,11 +16,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install stable toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
     - name: Build
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-    - name: Install tarpaulin
-      run: cargo install cargo-tarpaulin
-    - name: Run tests with coverage
-      run: cargo tarpaulin --verbose
+    - name: Run cargo-tarpaulin
+      uses: actions-rs/tarpaulin@v0.1
+      with:
+        args: '--verbose'
