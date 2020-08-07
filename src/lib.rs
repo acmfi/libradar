@@ -4,8 +4,9 @@ pub mod radar {
 	use std::fs;
 	use std::io::{BufReader,Read};
 	use std::collections::HashMap;
-	use dex::{Dex,DexReader};
-
+	use dex::{method,Dex,DexReader};
+	use super::disass::*;
+	
 	type ApkArchive = zip::read::ZipArchive<BufReader<fs::File>>;
 
 	pub struct APK <'a> {
@@ -97,11 +98,37 @@ pub mod radar {
 		Ok(filemap)
 	}
 	
-	// pub fn get_dex_classes<'a>(dexmap: HashMap<&'a str, Dex<Vec<u8>>>) {
-	// 	for (k, v) in dexmap {
-	// 		let dex = &v;
-	// 	}
-	// }
+	pub fn print_dex_methods<'a>(dexmap: HashMap<&'a str, Dex<Vec<u8>>>) {
+		let mut mapcopy = dexmap;
+		let dex = mapcopy.remove("classes.dex").unwrap();
+		for class_def in dex.class_defs() {
+			let class_def = class_def.unwrap();
+			let javatype = dex.get_type(class_def.class_idx()).unwrap();
+			//if type.to_java_type().contains("android") {
+				let class = dex.find_class_by_name(&javatype.type_descriptor().to_string()).unwrap().unwrap();
+				println!("Java Type: {}",javatype.to_java_type());
+				println!("Methods: <");
+				for method in class.methods() {
+					println!("\t{} {},",javatype.to_java_type(),method.name());
+					if let Some(code) = method.code() {
+						println!("\tIntructions for {}", method.name());
+						//let mut found = false;
+						for (idx, ins) in disassemble(code).enumerate() {
+							println!("\t\tInstruction: {}, Is invoke?: {}",ins.mnemonic(),ins.is_invoke());
+							// if ins.is_invoke() && !found {
+							// 	found = true;
+							// 	println!("\t{} {},",jtype.to_java_type(),method.name());
+							// }
+						}
+						println!();
+					}
+					
+				}
+				println!(">");
+				//println!("Result: {:#?}",result.unwrap().unwrap());
+			//}	
+		}
+	}
 	
 }
 

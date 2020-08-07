@@ -33,9 +33,11 @@ fn main() {
 	println!();
 
 	println!("Mapping all fetched .dex files...");
-	let _map = get_dex_files(apk_file,list);
+	let map = get_dex_files(apk_file,list).unwrap();
 	println!();
 
-
+	println!("Printing stuff from dex file...");
+	print_dex_methods(map);
+	println!();
 
 }
