@@ -29,4 +29,3 @@ jobs:
       uses: actions-rs/tarpaulin@v0.1
       with:
         args: '--verbose'
-        out-type: Stdout
