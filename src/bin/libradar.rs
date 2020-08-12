@@ -13,27 +13,23 @@ fn main() {
     println!("{}\n", apk_path);
 
 	println!("Opening APK file...");
-	let mut apk_file = &mut open_apk(&*args[1]).unwrap();
+	let apk_file = &open_apk(&*args[1]).unwrap();
 	println!();
 
-	println!("Listing all contents in APK file...");
-	//show_apk_contents(apk_file);
-	println!();
+	// println!("Listing all contents in APK file...");
+	// show_apk_contents(apk_file);
+	// println!();
 
-	println!("Listing .dex files in APK file...");
-	show_dex_files(apk_file);
-	println!();
+	// println!("Listing .dex files in APK file...");
+	// show_dex_files(apk_file);
+	// println!();
 
 	println!("Getting list of .dex files...");
-	let list = get_dex_list(&mut apk_file);
-	//let list
-	println!();
-
-	let apk_file = &mut open_apk(&*args[1]).unwrap();
+	let list = get_dex_list(&apk_file);
 	println!();
 
 	println!("Mapping all fetched .dex files...");
-	let map = get_dex_files(apk_file,list).unwrap();
+	let map = get_dex_files(&apk_file,list).unwrap();
 	println!();
 
 	println!("Printing stuff from dex file...");
