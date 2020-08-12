@@ -187,7 +187,7 @@ mod tests {
 		assert!(map.contains_key("classes.dex"));
 		for (k, v) in map {
 	    	assert_eq!(k,"classes.dex");
-			assert_eq!(v.header().checksum(),vv.header().checksum());
+			assert_eq!(v.header().checksum(),dex.header().checksum());
 		}
         Ok(())
 	}
