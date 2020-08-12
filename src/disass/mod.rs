@@ -1,7 +1,7 @@
 // use std::convert::TryFrom;
+use dex::code::CodeItem;
 use std::convert::TryInto;
 use std::fmt;
-use dex::code::CodeItem;
 
 #[allow(dead_code)]
 mod opcodes;
@@ -1336,7 +1336,7 @@ pub fn disassemble<'a>(code: &'a CodeItem) -> InstIterator<'a> {
 
 #[cfg(test)]
 mod test_inst {
-    use super::{Inst, InstIterator};
+    use super::{Inst};
 
     #[test]
     fn test_op() {

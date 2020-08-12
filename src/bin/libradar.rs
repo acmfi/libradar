@@ -1,39 +1,39 @@
-use libradar::radar::*;
+use libradar::apk::*;
+use libradar::disass::disassemble;
+use std::convert::TryInto;
+
+fn print_info_of_apk(apk: Apk) {
+    for class in apk.classes() {
+        let class = class.expect("Failed to load class");
+        let class_name = class.jtype().type_descriptor().to_string();
+        println!("class {}", class_name);
+        for method in class.methods() {
+            println!("  method {}", method.name().to_string());
+            if let Some(code) = method.code() {
+                for ins in disassemble(code) {
+                    println!("    {}", ins.mnemonic());
+                    if ins.is_invoke() {
+                        let target = ins.invoke_target();
+                        let target_method = apk.get_method_item(target.try_into().unwrap()).unwrap();
+                        println!("      {} | {:?}", target, target_method);
+                    }
+                }
+            } else {
+                println!("    This method has no code");
+            }
+        }
+    }
+}
 
 fn main() {
     let args: Vec<_> = std::env::args().collect();
     if args.len() < 2 {
         println!("An argument is needed in order to work.");
         println!("Usage: {} <apk filename>", &*args[0]);
-        panic!();
+        return;
     }
 
-    println!("Finding APK file...");
-    let apk_path = find_apk(&*args[1]);
-    println!("{}\n", apk_path);
+    let apk = Apk::from_path(&*args[1]).expect("Failed to open APK");
 
-	println!("Opening APK file...");
-	let apk_file = &open_apk(&*args[1]).unwrap();
-	println!();
-
-	// println!("Listing all contents in APK file...");
-	// show_apk_contents(apk_file);
-	// println!();
-
-	// println!("Listing .dex files in APK file...");
-	// show_dex_files(apk_file);
-	// println!();
-
-	println!("Getting list of .dex files...");
-	let list = get_dex_list(&apk_file);
-	println!();
-
-	println!("Mapping all fetched .dex files...");
-	let map = get_dex_files(&apk_file,list).unwrap();
-	println!();
-
-	println!("Printing stuff from dex file...");
-	print_dex_methods(map);
-	println!();
-
+    print_info_of_apk(apk);
 }

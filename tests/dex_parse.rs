@@ -1,6 +1,6 @@
 extern crate dex;
 
-use dex::{Result,DexReader};
+use dex::{DexReader, Result};
 use memmap::MmapOptions;
 use std::fs::File;
 use std::path::Path;

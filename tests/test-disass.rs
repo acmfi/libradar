@@ -12,19 +12,9 @@ fn test_disassembly() {
         "if-eqz",
         "sget-object",
         "invoke-static",
-        "return-object"
+        "return-object",
     ];
-    let is_call = [
-        false,
-        true,
-        false,
-        true,
-        false,
-        false,
-        false,
-        true,
-        false
-    ];
+    let is_call = [false, true, false, true, false, false, false, true, false];
 
     let dex = DexReader::from_file("resources/classes.dex").expect("Can't open test dex file");
     let class = dex
@@ -44,5 +34,8 @@ fn test_disassembly() {
         }
     }
 
-    assert!(found, "The test method to disassemble could not be found. Test missed!");
+    assert!(
+        found,
+        "The test method to disassemble could not be found. Test missed!"
+    );
 }
