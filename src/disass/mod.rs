@@ -3,12 +3,12 @@ use dex::code::CodeItem;
 use std::convert::TryInto;
 use std::fmt;
 
+mod getters;
 #[allow(dead_code)]
 mod opcodes;
-mod getters;
 
-use crate::disass::opcodes::*;
 use crate::disass::getters::*;
+use crate::disass::opcodes::*;
 
 struct InstType {
     pub mnemonic: &'static str,
@@ -228,7 +228,7 @@ pub fn disassemble<'a>(code: &'a CodeItem) -> InstIterator<'a> {
 
 #[cfg(test)]
 mod test_inst {
-    use super::{Inst};
+    use super::Inst;
 
     #[test]
     fn test_op() {

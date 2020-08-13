@@ -1109,5 +1109,3 @@ mod test_getters {
         panics_on!(GetterOpAABBBBBBBBBBBBBBBB, h);
     }
 }
-
-
