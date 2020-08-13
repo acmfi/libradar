@@ -3,7 +3,8 @@ use libradar::disass::disassemble;
 use std::convert::TryInto;
 
 fn print_info_of_apk(apk: Apk) {
-    for class in apk.classes() {
+    for dex in apk.dex_files {
+    for class in dex.classes() {
         let class = class.expect("Failed to load class");
         let class_name = class.jtype().type_descriptor().to_string();
         println!("class {}", class_name);
@@ -14,7 +15,7 @@ fn print_info_of_apk(apk: Apk) {
                     println!("    {}", ins.mnemonic());
                     if ins.is_invoke() {
                         let target = ins.invoke_target();
-                        let target_method = apk.get_method_item(target.try_into().unwrap()).unwrap();
+                        let target_method = dex.get_method_item(target.try_into().unwrap()).unwrap();
                         println!("      {} | {:?}", target, target_method);
                     }
                 }
@@ -22,6 +23,7 @@ fn print_info_of_apk(apk: Apk) {
                 println!("    This method has no code");
             }
         }
+    }
     }
 }
 

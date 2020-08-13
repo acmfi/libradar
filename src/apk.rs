@@ -1,6 +1,4 @@
 use dex;
-use dex::class::{ClassId, Class};
-use dex::method::{MethodIdItem,MethodId};
 use dex::{Dex, DexReader};
 use rc_zip::{prelude::*, EntryContents};
 use std::fmt;
@@ -17,6 +15,7 @@ struct ApkArchive {
 
 type DexFile = Dex<Vec<u8>>;
 
+#[allow(dead_code)]
 pub struct Apk {
     pub path: String,
     apk_archive: ApkArchive,
@@ -68,25 +67,6 @@ impl Apk {
             apk_archive: apk_archive,
             dex_files: dex_files,
         })
-    }
-
-    pub fn classes(&self) -> impl Iterator<Item = dex::Result<Class>> + '_ {
-        self.dex_files.iter().flat_map(|dex| dex.classes())
-    }
-
-    pub fn get_method_item(&self, method_id: MethodId) -> dex::Result<MethodIdItem> {
-        let mut last: Option<dex::Result<MethodIdItem>> = None;
-        for dex in &self.dex_files {
-            match dex.get_method_item(method_id) {
-                Ok(m) => return Ok(m),
-                Err(e) => last = Some(Err(e)),
-            }
-        }
-        return last.unwrap();
-    }
-
-    pub fn search_class(&self, id: ClassId) -> dex::Result<Class> {
-        self.classes().find(|c| c.as_ref().unwrap().id() == id).unwrap()
     }
 }
 
