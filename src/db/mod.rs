@@ -1,46 +1,44 @@
-use crate::db::memdb::MemDB;
-
 pub mod memdb;
 
-struct PkgInfo<'a> {
+struct PkgInfo {
 	hash: Vec<u8>,
-	name: &'a str,
+	name: String,
 	weight: i32
 }
 
-struct LibInfo<'a> {
+struct LibInfo {
 	hash: Vec<u8>,
-	name: &'a str	
+	name: String
 }
 
-struct PkgResutl<'a> {
+struct PkgResutl {
 	hash: Vec<u8>,
-	name: &'a str,
-	lib_name: &'a str,
+	name: String,
+	lib_name: String,
 	similarity: Option<f32>
 }
 
-struct Thresholds<'a> {
+struct Thresholds {
 	lib_match_rate: f32,
 	min_api_weight: i32,
 	min_lib_count: i32,
-	pkg_name_blacklist: Vec<&'a str>	
+	pkg_name_blacklist: Vec<String>	
 }
 
 trait DexDB {
-	fn add_pkgs(mut _db: &MemDB, _pkgs: Vec<PkgInfo>) { todo!() }
+	fn add_pkgs(&mut self, _pkgs: Vec<PkgInfo>);
 
-	fn add_libs(mut _db: &MemDB, _libs: Vec<LibInfo>) { todo!() }
+	fn add_libs(&mut self, _libs: Vec<LibInfo>);
 
-	fn remove_pkgs(mut _db: &MemDB, _pkgs: Vec<PkgInfo>) { todo!() }
+	fn remove_pkgs(&mut self, _pkgs: Vec<PkgInfo>);
 
-	fn get_pkgs<'a>(_db: &'a MemDB, _threshold: i32) -> Vec<PkgInfo<'a>> { todo!() }
+	fn get_pkgs(&mut self, _threshold: i32) -> Vec<PkgInfo>;
 
-	fn match_libs<'a>(_db: &'a MemDB, _hash_list: Vec<Vec<u8>>) -> Vec<LibInfo<'a>> { todo!() }
+	fn match_libs(&mut self, _hash_list: Vec<Vec<u8>>) -> Vec<LibInfo>;
 
-	fn load(_db: &MemDB) { todo!() }
+	fn load(&mut self) -> Result<(), Box<dyn std::error::Error>>;
 	
-	fn preload() { todo!() }
+	fn preload();
 
-	fn dump() { todo!() }
+	fn dump();
 }
