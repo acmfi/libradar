@@ -1,6 +1,6 @@
 use crate::db::*;
 use std::collections::BTreeMap;
-use std::io::{BufReader,BufRead,Read};
+use std::io::{BufReader,BufRead,Write};
 
 pub struct MemDB {
 	db_pkgs: BTreeMap<Vec<u8>,BTreeMap<String, i32>>,
@@ -121,8 +121,8 @@ impl DexDB for MemDB {
 		
 		if let Ok(f) = std::fs::File::open("resources/db_libs.txt") {
 			let libs = BufReader::new(f).lines();
-			let mut pkgs: Vec<String> = Vec::new();
-			let mut hash: Vec<u8> = Vec::new();
+			//let mut pkgs: Vec<String> = Vec::new();
+			//let mut hash: Vec<u8> = Vec::new();
 			let mut map: BTreeMap<Vec<u8>,String> = BTreeMap::new();
 			for line in libs {
 				let l = line.expect("could not read line");
@@ -135,18 +135,44 @@ impl DexDB for MemDB {
 		else { println!("db_libs.txt not found") }
 		
 		if let Ok(f) = std::fs::File::open("resources/db_weights.txt") {
-			let weights = BufReader::new(f);
+			let weights = BufReader::new(f).lines();
+			for line in weights {
+				let l = line.expect("could not read line");
+				let elems: Vec<&str> = l.split_whitespace().collect();
+				self.db_weight.insert(elems[0].as_bytes().to_vec(),
+									  elems[1].parse::<i32>().unwrap());
+			}
 		}
 		else{ println!("db_weights.txt not found") }
 		
 		Ok(())
 	}
 
-	fn preload() {
-		
+	fn preload(&mut self) {
+		println!("A memory database doesn't have to preload anything");
 	}
 
-	fn dump() {
-		
+	fn dump(&mut self) {
+		if let Ok(f) = std::fs::File::create("resources/db_pkgs.txt") {
+			for (hash, pkg) in self.db_pkgs {
+				for (name, count) in pkg {
+					f.write_fmt(format_args!("{:?} {} {}\n",hash,name,count));
+				}
+			}
+		}
+
+		if let Ok(f) = std::fs::File::create("resources/db_libs.txt") {
+			for (hash, pkg) in self.db_libs {
+				for name in pkg {
+					f.write_fmt(format_args!("{:?} {}\n",hash,name));
+				}
+			}
+		}
+
+		if let Ok(f) = std::fs::File::create("resources/db_weights.txt") {
+			for (hash, weight) in self.db_weight {
+				f.write_fmt(format_args!("{:?} {}\n",hash,weight));
+			}
+		}
 	}
 }
