@@ -12,13 +12,13 @@ pub struct MemDB {
 
 impl MemDB {
 	pub fn init() -> Result<Self,Box<dyn std::error::Error>> {
-		let apis = BufReader::new(std::fs::File::open("apis.txt")?).lines();
+		let apis = BufReader::new(std::fs::File::open("resources/apis.txt")?).lines();
 		let mut api_set: Vec<String> = Vec::new();
 		for api in apis {
 			api_set.push(api.unwrap());
 		}
 			
-		let libs = BufReader::new(std::fs::File::open("libs.txt")?).lines();
+		let libs = BufReader::new(std::fs::File::open("resources/libs.txt")?).lines();
 		let mut lib_set: Vec<String> = Vec::new();
 		for lib in libs {
 			lib_set.push(lib.unwrap());
@@ -113,7 +113,8 @@ impl DexDB for MemDB {
 				let l = line?;
 				let mut pkg: BTreeMap<String, i32> = BTreeMap::new();
 				let elems: Vec<&str> = l.split_whitespace().collect();
-				pkg.insert(elems[1].to_string(),elems[2].parse::<i32>().unwrap());
+				pkg.insert(elems[1].to_string(),
+						   elems[2].parse::<i32>().unwrap());
 				self.db_pkgs.insert(elems[0].as_bytes().to_vec(), pkg);
 			}
 		}
@@ -121,16 +122,16 @@ impl DexDB for MemDB {
 		
 		if let Ok(f) = std::fs::File::open("resources/db_libs.txt") {
 			let libs = BufReader::new(f).lines();
-			//let mut pkgs: Vec<String> = Vec::new();
-			//let mut hash: Vec<u8> = Vec::new();
-			let mut map: BTreeMap<Vec<u8>,String> = BTreeMap::new();
+			let mut map: BTreeMap<Vec<u8>,Vec<String>> = BTreeMap::new();
 			for line in libs {
 				let l = line.expect("could not read line");
 				let elems: Vec<&str> = l.split_whitespace().collect();
-				map.insert(elems[0].as_bytes().to_vec(), elems[1].to_string());
-				println!("{:?} - {}",elems[0].as_bytes().to_vec(),elems[1].to_string())
+				map.entry(elems[0].as_bytes().to_vec())
+					.or_default()
+					.push(elems[1].to_string());
+				//println!("{:?} - {}",elems[0].as_bytes().to_vec(),elems[1].to_string())
 			}
-			//self.db_libs.insert(elems[0].as_bytes().to_vec(), elems[1].to_string());
+			self.db_libs.append(&mut map);
 		}
 		else { println!("db_libs.txt not found") }
 		
@@ -152,27 +153,48 @@ impl DexDB for MemDB {
 		println!("A memory database doesn't have to preload anything");
 	}
 
-	fn dump(&mut self) {
-		if let Ok(f) = std::fs::File::create("resources/db_pkgs.txt") {
-			for (hash, pkg) in self.db_pkgs {
+	fn dump(&mut self) -> Result<(),Box<dyn std::error::Error>> {
+		if let Ok(mut f) = std::fs::File::create("resources/db_pkgs_dump.txt") {
+			let pkgs = &self.db_pkgs;
+			for (hash, pkg) in pkgs {
 				for (name, count) in pkg {
-					f.write_fmt(format_args!("{:?} {} {}\n",hash,name,count));
+					f.write_fmt(
+						format_args!("{:?} {} {}\n",
+									 hash,
+									 name,
+									 count)
+					).expect("couldn't write db_pkgs.txt");
 				}
 			}
 		}
 
-		if let Ok(f) = std::fs::File::create("resources/db_libs.txt") {
-			for (hash, pkg) in self.db_libs {
+		if let Ok(mut f) = std::fs::File::create("resources/db_libs_dump.txt") {
+			let libs = &self.db_libs;
+			for (hash, pkg) in libs {
 				for name in pkg {
-					f.write_fmt(format_args!("{:?} {}\n",hash,name));
+					f.write_fmt(
+						format_args!(
+							"{} {}\n",
+							&String::from_utf8(hash.to_vec())
+								.expect("couldn't convert hash"),
+							name
+						)
+					).expect("couldn't write db_libs.txt");
 				}
 			}
 		}
 
-		if let Ok(f) = std::fs::File::create("resources/db_weights.txt") {
-			for (hash, weight) in self.db_weight {
-				f.write_fmt(format_args!("{:?} {}\n",hash,weight));
+		if let Ok(mut f) = std::fs::File::create("resources/db_weights_dump.txt") {
+			let weights = &self.db_weight;
+			for (hash, weight) in weights {
+				f.write_fmt(
+					format_args!("{:?} {}\n",
+								 hash,
+								 weight)
+				).expect("couldn't write db_weights.txt");
 			}
 		}
+		Ok(())
 	}
 }
+
