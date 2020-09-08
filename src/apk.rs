@@ -13,7 +13,7 @@ struct ApkArchive {
     file: fs::File,
 }
 
-type DexFile = Dex<Vec<u8>>;
+pub type DexFile = Dex<Vec<u8>>;
 
 #[allow(dead_code)]
 pub struct Apk {

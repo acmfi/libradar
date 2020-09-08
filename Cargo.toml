@@ -12,3 +12,5 @@ rc-zip = "0.0.1"
 positioned-io = "0.2.2"
 memmap = "0.7.0"
 dex = { git = "https://github.com/0xddom/dex-parser" }
+seahorse = "1.0.0"
+serde = { version = "1.0", features = ["derive"] }

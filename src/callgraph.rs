@@ -137,7 +137,9 @@ mod tests {
             if method.name() == "fillContent" {
                 if let Some(code) = method.code() {
                     found = true;
-                    for (i, target) in get_invoked_methods_names(&code, &apk.dex_files[0]).enumerate() {
+                    for (i, target) in
+                        get_invoked_methods_names(&code, &apk.dex_files[0]).enumerate()
+                    {
                         assert_eq!(target, calls[i]);
                     }
                 }
