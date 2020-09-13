@@ -1,8 +1,9 @@
+use crate::callgraph::get_invoked_methods_names;
 use dex::class::Class;
 use dex::Dex;
-use md5::Digest;
+use hex;
+use md5::{Digest, Md5};
 use std::collections::HashMap;
-use std::io::Bytes;
 
 enum Tree {
     Root {
@@ -12,17 +13,21 @@ enum Tree {
     Leaf {
         name: String,
         hash: String,
-        weight: u16,
+        weight: usize,
     },
 }
 
 // FIXME: This algorithm is wrong. Check the comment in your first commit.
-fn get_invoked_apis(class: Class, api_set: Vec<String>) -> Vec<String> {
+fn get_invoked_apis<R: AsRef<[u8]>>(
+    dex: &Dex<R>,
+    class: Class,
+    api_set: &Vec<String>,
+) -> Vec<String> {
     let ret = Vec::new();
-    for methods in class.methods() {
-        for invoked_method in methods {
-            if api_set.contains(&methods) {
-                ret.append(methods);
+    for method in class.methods() {
+        if let Some(code) = method.code() {
+            for target in get_invoked_methods_names(&code, &dex) {
+                if api_set.contains(&target) {}
             }
         }
     }
@@ -30,38 +35,39 @@ fn get_invoked_apis(class: Class, api_set: Vec<String>) -> Vec<String> {
 }
 
 // FIXME: Specify the return type here
-fn calc_hash(lst: Vec<String>) {
-    let ret = Digest::new();
+fn calc_hash(lst: Vec<String>) -> String {
+    let mut ret = Md5::new();
     for s in lst {
-        ret.update(Bytes::from(s));
+        ret.update(s.as_bytes());
     }
-    return ret.finalize();
+    return hex::encode(ret.finalize());
 }
 
 impl Tree {
-
     // FIXME: You have to return the `Tree` thingy
     // The fix for `Dex` is that a `Dex` is parametrized on some reference to
     // a buffer of bytes (`u8`s). This syntax I think is the most generic AFAIK to
     // represent this.
-    pub fn new<R: AsRef<[u8]>>(dex: Dex<R>, api_set: Vec<String>) {
-        let branches = HashMap::new();
+    pub fn new<R: AsRef<[u8]>>(dex: Dex<R>, api_set: Vec<String>) -> Tree {
+        let mut branches = HashMap::new();
         let name = String::from("L");
         let tree = Tree::Root { branches, name };
 
         for class in dex.classes() {
-            let name = class.name();
-            assert!(name.starts_with('L'));
-            let apis = get_invoked_apis(class, api_set);
+            let class = class.expect("Failed to load class");
+            let class_name = class.jtype().type_descriptor().to_string();
+            assert!(class_name.starts_with('L'));
+            let apis = get_invoked_apis(&dex, class, &api_set);
             if apis.len() == 0 {
                 continue;
             }
             let leaf = Tree::Leaf {
-                name: name,
+                name: class_name,
                 hash: calc_hash(apis),
-                weight: apis.len(),
+                weight: apis.clone().len(),
             };
-            tree.branches.insert(name, leaf);
+	    
         }
+        return tree;
     }
 }

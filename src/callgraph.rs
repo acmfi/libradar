@@ -5,9 +5,9 @@ use dex::method::MethodIdItem;
 use dex::Dex;
 use std::convert::TryInto;
 
-pub fn get_invoked_methods<'a>(
+pub fn get_invoked_methods<'a, R: AsRef<[u8]>>(
     code: &'a CodeItem,
-    dex: &'a Dex<Vec<u8>>,
+    dex: &'a Dex<R>,
 ) -> impl Iterator<Item = MethodIdItem> + 'a {
     disassemble(code).filter_map(move |ins| {
         if ins.is_invoke() {
@@ -21,9 +21,9 @@ pub fn get_invoked_methods<'a>(
     })
 }
 
-pub fn get_invoked_methods_names<'a>(
+pub fn get_invoked_methods_names<'a, R: AsRef<[u8]>>(
     code: &'a CodeItem,
-    dex: &'a Dex<Vec<u8>>,
+    dex: &'a Dex<R>,
 ) -> impl Iterator<Item = String> + 'a {
     get_invoked_methods(code, dex).map(move |target| {
         let method_name = dex.get_string(target.name_idx()).unwrap().to_string();
