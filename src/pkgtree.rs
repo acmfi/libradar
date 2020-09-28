@@ -5,9 +5,10 @@ use hex;
 use md5::{Digest, Md5};
 use std::collections::HashMap;
 
+#[derive(Copy)]
 enum Tree {
     Root {
-        name: String,
+        tree_name: String,
         branches: HashMap<String, Tree>,
     },
     Leaf {
@@ -49,25 +50,67 @@ impl Tree {
     // a buffer of bytes (`u8`s). This syntax I think is the most generic AFAIK to
     // represent this.
     pub fn new<R: AsRef<[u8]>>(dex: Dex<R>, api_set: Vec<String>) -> Tree {
-        let mut branches = HashMap::new();
-        let name = String::from("L");
-        let tree = Tree::Root { branches, name };
+        let branches = HashMap::new();
+        let tree_name = String::from("L");
+        let tree = Tree::Root {
+            branches,
+            tree_name,
+        };
 
         for class in dex.classes() {
             let class = class.expect("Failed to load class");
             let class_name = class.jtype().type_descriptor().to_string();
             assert!(class_name.starts_with('L'));
             let apis = get_invoked_apis(&dex, class, &api_set);
-            if apis.len() == 0 {
+            let apis_len = apis.len();
+            if apis_len == 0 {
                 continue;
             }
             let leaf = Tree::Leaf {
                 name: class_name,
                 hash: calc_hash(apis),
-                weight: apis.clone().len(),
+                weight: apis_len,
             };
-	    
+            tree.add_leaf(leaf);
         }
         return tree;
+    }
+
+    fn add_leaf(self, leaf: Tree) {
+        match leaf {
+            Tree::Leaf { name, hash, weight } => match self {
+                Tree::Root {
+                    tree_name,
+                    mut branches,
+                } => {
+                    let suffix = name
+                        .as_str()
+                        .get(tree_name.as_str().len() + 1..)
+                        .expect("Failed to load");
+                    let elems: Vec<&str> = suffix.split('/').collect();
+                    let next_name = elems.get(0).expect("Failed to get element");
+                    if suffix.contains('/') {
+                        if !branches.contains_key::<str>(next_name) {
+                            branches.insert(
+                                next_name.to_string(),
+                                Tree::Leaf {
+                                    name: tree_name + "/" + next_name,
+                                    hash,
+                                    weight,
+                                },
+                            );
+                            branches
+                                .get::<str>(next_name)
+                                .expect("Something went wrong")
+                                .add_leaf(leaf);
+                        }
+                    } else {
+                        branches.insert(next_name.to_string(), leaf);
+                    }
+                }
+                _ => (),
+            },
+            _ => (),
+        }
     }
 }
