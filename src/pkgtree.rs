@@ -5,7 +5,7 @@ use hex;
 use md5::{Digest, Md5};
 use std::collections::HashMap;
 
-#[derive(Copy)]
+//#[derive(Copy)]
 enum Tree {
     Root {
         tree_name: String,
@@ -52,7 +52,7 @@ impl Tree {
     pub fn new<R: AsRef<[u8]>>(dex: Dex<R>, api_set: Vec<String>) -> Tree {
         let branches = HashMap::new();
         let tree_name = String::from("L");
-        let tree = Tree::Root {
+        let mut tree = Tree::Root {
             branches,
             tree_name,
         };
@@ -76,12 +76,12 @@ impl Tree {
         return tree;
     }
 
-    fn add_leaf(self, leaf: Tree) {
+    fn add_leaf(&mut self, leaf: Tree) {
         match leaf {
             Tree::Leaf { name, hash, weight } => match self {
                 Tree::Root {
                     tree_name,
-                    mut branches,
+                    branches,
                 } => {
                     let suffix = name
                         .as_str()
@@ -94,18 +94,19 @@ impl Tree {
                             branches.insert(
                                 next_name.to_string(),
                                 Tree::Leaf {
-                                    name: tree_name + "/" + next_name,
-                                    hash,
+                                    name: tree_name.to_owned() + "/" + next_name,
+                                    hash: hash.clone(),
                                     weight,
                                 },
                             );
                             branches
-                                .get::<str>(next_name)
+                                .get_mut::<str>(next_name)
                                 .expect("Something went wrong")
-                                .add_leaf(leaf);
+                                .add_leaf(Tree::Leaf { name, hash: hash.clone(), weight });
                         }
                     } else {
-                        branches.insert(next_name.to_string(), leaf);
+                        branches.insert(next_name.to_string(), Tree::Leaf {
+                            name, hash: hash.clone(), weight });
                     }
                 }
                 _ => (),
